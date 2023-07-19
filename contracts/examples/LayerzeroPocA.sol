@@ -20,12 +20,18 @@ contract LayerzeroPocA is NonblockingLzApp {
         functionCCalled = true;
     }
 
-    function functionA(uint16 _dstChainId) public payable {
+    function functionA(uint16 _dstChainId, bytes memory _adapterParams) public payable {
         functionACalled = true;
         bytes4 functionSelector = bytes4(keccak256("functionC()"));
         bytes memory payload = abi.encode(functionSelector);
 
-        _lzSend(_dstChainId, payload, payable(msg.sender), address(0x0), bytes(""), address(this).balance);
+        _lzSend(_dstChainId, payload, payable(msg.sender), address(0x0), _adapterParams, msg.value);
+    }
+
+    function estimateFunctionA(uint16 _dstChainId, bytes calldata _adapterParams) public view returns (uint nativeFee, uint zroFee) {
+        bytes4 functionSelector = bytes4(keccak256("functionC()"));
+        bytes memory payload = abi.encode(functionSelector);
+        return lzEndpoint.estimateFees(_dstChainId, address(this), payload, false, _adapterParams);
     }
 
     receive() external payable {}
